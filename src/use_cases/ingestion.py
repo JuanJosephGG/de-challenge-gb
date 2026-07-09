@@ -6,14 +6,14 @@ from src.use_cases.dlq_manager import invalid_records_to_log
 
 def process_employee_batch(db: Session, batch: HiredEmployeeBatch) -> dict:
     """
-    Procesa un lote de empleados. Separa los válidos de los inválidos 
-    usando validación relacional en bloque.
+    Processes a batch of employees. Separates valid from invalid records 
+    using relational validation in bulk.
     """
-    # 1. Extraer IDs únicos para validación en bloque (O(1) consultas a DB)
+    # 1. Extract unique IDs for bulk validation (O(1) database queries)
     unique_dept_ids = {emp.department_id for emp in batch.data}
     unique_job_ids = {emp.job_id for emp in batch.data}
 
-    # 2. Consultar qué IDs realmente existen en la base de datos
+    # 2. Query which IDs actually exist in the database
     valid_depts = db.scalars(select(Department.id).where(Department.id.in_(unique_dept_ids))).all()
     valid_jobs = db.scalars(select(Job.id).where(Job.id.in_(unique_job_ids))).all()
 
@@ -23,7 +23,7 @@ def process_employee_batch(db: Session, batch: HiredEmployeeBatch) -> dict:
     valid_records_to_insert = []
     rejected_count = 0
 
-    # 3. Filtrar y separar (Split)
+    # 3. Filter and separate (Split)
     for emp in batch.data:
         errors = []
         if emp.department_id not in valid_dept_set:
@@ -32,17 +32,17 @@ def process_employee_batch(db: Session, batch: HiredEmployeeBatch) -> dict:
             errors.append(f"job_id {emp.job_id} not found")
 
         if errors:
-            # Va al DLQ
+            # Goes to the DLQ
             invalid_records_to_log.append({
                 "payload": emp.model_dump(),
                 "error_reason": " | ".join(errors)
             })
             rejected_count += 1
         else:
-            # Es válido, preparamos para inserción masiva
+            # Valid, prepare for bulk insertion
             valid_records_to_insert.append(emp.model_dump())
 
-    # 4. Inserción Masiva (Bulk Insert) de los válidos
+    # 4. Bulk Insert of valid records
     inserted_count = 0
     if valid_records_to_insert:
         db.bulk_insert_mappings(HiredEmployee, valid_records_to_insert)
