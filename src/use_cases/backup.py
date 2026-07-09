@@ -64,20 +64,20 @@ def backup_table_to_s3(db: Session, table_name: str) -> str:
     config = TABLE_CONFIG[table_name]
     model = config["model"]
     
-    # 1. Extract all records dynamically
+    # Extract all records dynamically
     records = db.execute(select(model)).scalars().all()
     
     # Convert SQLAlchemy objects to a list of dictionaries required by fastavro
     # We iterate over the columns defined in the ORM model to extract data dynamically
     data_to_write = [{col.name: getattr(r, col.name) for col in model.__table__.columns} for r in records]
     
-    # 2. Write AVRO data to an in-memory buffer (Zero local disk usage)
+    # Write AVRO data to an in-memory buffer (Zero local disk usage)
     buffer = io.BytesIO()
     parsed_schema = fastavro.parse_schema(config["avro_schema"])
     fastavro.writer(buffer, parsed_schema, data_to_write)
     buffer.seek(0)
     
-    # 3. Stream buffer directly to S3
+    # Stream buffer directly to S3
     s3_client = get_s3_client()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     s3_key = f"backups/{table_name}/backup_{timestamp}.avro"
@@ -99,19 +99,19 @@ def restore_table_from_s3(db: Session, table_name: str, s3_key: str) -> int:
     s3_client = get_s3_client()
     buffer = io.BytesIO()
     
-    # 1. Download S3 object directly into memory
+    # Download S3 object directly into memory
     s3_client.download_fileobj(settings.AWS_S3_BUCKET_NAME, s3_key, buffer)
     buffer.seek(0)
     
-    # 2. Read AVRO from memory
+    # Read AVRO from memory
     reader = fastavro.reader(buffer)
     records = [record for record in reader]
         
     if records:
-        # 3. Create the PostgreSQL UPSERT statement
+        # Create the PostgreSQL UPSERT statement
         stmt = insert(model).values(records)
         
-        # 4. Dynamically figure out which columns to update if the ID already exists
+        # Dynamically figure out which columns to update if the ID already exists
         # We update everything except the Primary Key ('id')
         update_dict = {c.name: c for c in stmt.excluded if c.name != 'id'}
         
