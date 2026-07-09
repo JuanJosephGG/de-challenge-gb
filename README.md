@@ -39,11 +39,37 @@ The platform utilizes a hybrid Transactional/Analytical approach:
 
 ## 🚀 Setup & Local Deployment
 
-### 1. Clone the repository
+###  Clone the repository
 ```bash
 git clone [https://github.com/JuanJosephGG/de-challenge-gb.git](https://github.com/JuanJosephGG/de-challenge-gb.git)
 cd de-challenge-gb
 ```
+
+### Local Development (Without Docker)
+
+If you prefer to run the application natively for active development or debugging, you can use `uv` as your package manager and environment resolver.
+
+#### 1. Install Dependencies
+Ensure you have `uv` installed, then synchronize the project dependencies:
+```bash
+uv sync --dev
+```
+
+#### 2. Configure Environment Variables
+Ensure your .env file is present in the root directory.
+
+Note: You must include your active local or cloud database credentials (e.g., PostgreSQL and AWS S3 keys) for the application to boot correctly. Do not commit this file to version control.
+
+#### 3. Run the Development Server
+Launch the FastAPI application with live-reload enabled:
+```bash
+uv run uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Note: > * The API will be available at: http://127.0.0.1:8000
+
+The interactive Swagger documentation will be accessible at: http://127.0.0.1:8000/docs
+
 
 ---
 
@@ -107,6 +133,7 @@ graph TD
     API -- "4. Backup & Restore" <--> S3_Backup
     API -- "5. Query Metrics" --> Views
 ```
+
 ---
 
 ## 📁 Docker deployment
