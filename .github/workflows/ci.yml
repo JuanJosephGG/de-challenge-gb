@@ -41,6 +41,15 @@ jobs:
       - name: Run Pytest
         env:
           PYTHONPATH: .
+          DB_USER: dummy_user
+          DB_PASSWORD: dummy_password
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: dummy_db
+          AWS_ACCESS_KEY_ID: dummy_key
+          AWS_SECRET_ACCESS_KEY: dummy_secret
+          AWS_REGION: us-east-1
+          AWS_S3_BUCKET_NAME: dummy-bucket
         run: uv run pytest -v tests/ -W ignore
 
       # Step: Validate that the Dockerfile builds correctly
