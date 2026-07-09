@@ -3,7 +3,6 @@ import uuid
 from datetime import datetime
 from typing import Dict, Any, List
 
-# Asumiendo tu estructura simplificada
 from src.connections.s3_client import get_s3_client
 from src.config.settings import settings
 
