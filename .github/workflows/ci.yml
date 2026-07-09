@@ -39,7 +39,9 @@ jobs:
 
       # Step: Run your Pytest suite
       - name: Run Pytest
-        run: uv run pytest -v tests/
+        env:
+          PYTHONPATH: .
+        run: uv run pytest -v tests/ -W ignore
 
       # Step: Validate that the Dockerfile builds correctly
       - name: Test Docker Build
