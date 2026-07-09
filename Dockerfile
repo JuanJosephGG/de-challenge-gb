@@ -24,6 +24,7 @@ RUN uv sync --no-dev --no-install-project
 
 # 8. Application Code Layer: Copy the actual source code
 COPY src/ ./src/
+COPY main.py ./
 
 # 9. Permissions: Transfer ownership of the app directory to the non-root user
 RUN chown -R appuser:appgroup /app
@@ -35,4 +36,4 @@ USER appuser
 EXPOSE 8000
 
 # 12. Entrypoint: Start the application using uv to run uvicorn
-CMD ["/app/.venv/bin/uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/.venv/bin/uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -21,7 +21,7 @@ def process_historical_csv(db: Session, table_name: str, file: UploadFile) -> di
         raise ValueError(f"Table '{table_name}' not supported.")
 
     # Upload to S3
-    s3_key = f"raw/{table_name}/{file.filename}"
+    s3_key = f"bronze/{table_name}/{file.filename}"
     if not upload_file_to_s3(file.file, s3_key):
         raise Exception("Failed to upload the file to S3.")
 
